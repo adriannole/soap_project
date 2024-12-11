@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOAP Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            margin: 5px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cliente SOAP</h1>
+    <input type="text" id="nameInput" placeholder="Escribe tu nombre">
+    <button onclick="sendRequest()">Enviar</button>
+    <p id="response"></p>
+
+    <script>
+        async function sendRequest() {
+            const name = document.getElementById("nameInput").value;
+            if (name) {
+                const soapRequest = `
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap/">
+                        <soapenv:Header/>
+                        <soapenv:Body>
+                            <soap:sayHello>
+                                <name>${name}</name>
+                            </soap:sayHello>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                `;
+
+                const response = await fetch('http://localhost:8080/hello', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/xml; charset=utf-8',
+                    },
+                    body: soapRequest,
+                });
+
+                const text = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, 'text/xml');
+                const message = xmlDoc.getElementsByTagName('return')[0].textContent;
+
+                document.getElementById('response').textContent = message;
+            } else {
+                alert('Por favor, escribe tu nombre.');
+            }
+        }
+    </script>
+</body>
+</html>
